@@ -1,0 +1,6 @@
+main: me.bukkit.kiwifisher.TagCollector
+name: TagCollector
+version: 1.0
+depend: [Vault]
+commands:
+  tags:
