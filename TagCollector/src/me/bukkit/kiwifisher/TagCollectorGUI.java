@@ -128,6 +128,10 @@ public class TagCollectorGUI implements Listener{
 
             TagCollector.plugin.getServer().dispatchCommand(TagCollector.plugin.getServer().getConsoleSender(), "pex user " + whoClicked.getDisplayName() + " group remove " + itemName);
 
+
+            /*
+            The runable adds a 0.5s delay so that the system can execute the commands accurately.
+             */
             TagCollector.plugin.getServer().getScheduler().scheduleSyncDelayedTask(TagCollector.plugin, new Runnable() {
                 @Override
                 public void run() {
