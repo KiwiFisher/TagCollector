@@ -1,6 +1,5 @@
 package me.bukkit.kiwifisher;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,10 +16,8 @@ public class TagCollectorCommands implements CommandExecutor {
         if (command.getLabel().equalsIgnoreCase("tags") && commandSender instanceof Player) {
             Player player = (Player) commandSender;
 
-            player.sendMessage(ChatColor.GREEN + "Opening the tags GUI.");
             TagCollectorGUI playerInventory = new TagCollectorGUI().createInventory(player);
             playerInventory.openInventory();
-            player.sendMessage(playerInventory.getTagRanks().toString());
         }
 
         return false;

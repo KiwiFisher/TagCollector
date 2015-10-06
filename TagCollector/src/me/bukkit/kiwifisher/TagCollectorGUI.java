@@ -1,8 +1,6 @@
 package me.bukkit.kiwifisher;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,22 +22,31 @@ public class TagCollectorGUI implements Listener{
     public TagCollectorGUI createInventory(Player player) {
 
         this.setPlayer(player);
+        ArrayList<String> userTags = getTagRanks();
+
+        int size = 0;
+
+        for (String group : userTags) { size++; }
+
+        int rows = (size / 6) + 1;
 
         try {
-            inventory = Bukkit.createInventory(null, 9, player.getDisplayName() + "'s Chat Tags");
+            inventory = Bukkit.createInventory(null, rows * 9, player.getDisplayName() + "'s Chat Tags");
         } catch (IllegalArgumentException e) {
 
-            inventory = Bukkit.createInventory(null, 9, " Your Chat Tags");
+            inventory = Bukkit.createInventory(null, rows * 9, " Your Chat Tags");
         }
 
         ItemStack offButton = new ItemStack(Material.INK_SACK, 1, (byte) 1);
         ItemMeta offButtonMeta = offButton.getItemMeta();
-        offButtonMeta.setDisplayName(ChatColor.GRAY + "Trainer Tag");
+        offButtonMeta.setDisplayName(ChatColor.GRAY + "Trainer");
         offButton.setItemMeta(offButtonMeta);
 
         inventory.setItem(8, offButton);
 
-        setInventoryItems(getTagRanks());
+
+
+        setInventoryItems(userTags);
         setInventory(inventory);
 
         return this;
@@ -71,10 +78,11 @@ public class TagCollectorGUI implements Listener{
     public void setInventoryItems(ArrayList<String> tagsArray) {
 
         int position = 0;
+        int endOfRow = 7;
 
         for (String group : tagsArray) {
 
-            ItemStack item = new ItemStack(Material.APPLE, 1);
+            ItemStack item = new ItemStack(Material.STAINED_GLASS, 1, (byte) 5);
             ItemMeta itemMeta = item.getItemMeta();
             itemMeta.setDisplayName(ChatColor.GREEN + group);
             item.setItemMeta(itemMeta);
@@ -83,6 +91,10 @@ public class TagCollectorGUI implements Listener{
 
             position += 1;
 
+            if (position == endOfRow) {
+                position += 2;
+                endOfRow += 9;
+            }
 
         }
 
@@ -90,11 +102,11 @@ public class TagCollectorGUI implements Listener{
 
     public ArrayList<String> getTagRanks() {
 
-        ArrayList<String> tagRanks = new ArrayList<String>();
+        ArrayList<String> tagRanks = new ArrayList<>();
 
         for (String group : TagCollector.permissions.getGroups()) {
 
-            if (TagCollector.permissions.playerInGroup(this.getPlayer(), group) && !group.equalsIgnoreCase("default")) {
+            if (TagCollector.permissions.playerInGroup(this.getPlayer(), group) && (!group.equalsIgnoreCase("default") || !group.equalsIgnoreCase("Trainer"))) {
                 tagRanks.add(group);
             }
 
@@ -109,13 +121,33 @@ public class TagCollectorGUI implements Listener{
 
         event.setCancelled(true);
 
-        String itemName = event.getCurrentItem().getItemMeta().getDisplayName();
-        Player player = (Player) event.getWhoClicked();
+        try {
 
-        Bukkit.broadcastMessage(ChatColor.stripColor("Set" + player.getDisplayName() + " to " + itemName));
+            String itemName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+            Player whoClicked = (Player) event.getWhoClicked();
 
-        TagCollector.permissions.playerRemoveGroup(this.getPlayer(), itemName);
-        TagCollector.permissions.playerAddGroup(this.getPlayer(), itemName);
+            TagCollector.plugin.getServer().dispatchCommand(TagCollector.plugin.getServer().getConsoleSender(), "pex user " + whoClicked.getDisplayName() + " group remove " + itemName);
+
+            TagCollector.plugin.getServer().getScheduler().scheduleSyncDelayedTask(TagCollector.plugin, new Runnable() {
+                @Override
+                public void run() {
+                    TagCollector.plugin.getServer().dispatchCommand( TagCollector.plugin.getServer().getConsoleSender(), "pex user " + whoClicked.getDisplayName() + " group add " + itemName);
+                }
+            }, 10);
+
+            whoClicked.sendMessage(ChatColor.GREEN + "Set your chat tag to " + ChatColor.BOLD + itemName + ChatColor.GREEN + "!");
+            whoClicked.closeInventory();
+
+        } catch (Exception e) { }
+
+        finally {
+
+            Player whoClicked = (Player) event.getWhoClicked();
+            whoClicked.closeInventory();
+
+        }
+
+
 
     }
 
