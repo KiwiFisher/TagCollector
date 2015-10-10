@@ -1,13 +1,10 @@
 package me.bukkit.kiwifisher;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-/**
- * Created by Julian on 22/09/2015.
- */
 
 public class TagCollectorCommands implements CommandExecutor {
     @Override
@@ -16,8 +13,17 @@ public class TagCollectorCommands implements CommandExecutor {
         if (command.getLabel().equalsIgnoreCase("tags") && commandSender instanceof Player) {
             Player player = (Player) commandSender;
 
-            TagCollectorGUI playerInventory = new TagCollectorGUI().createInventory(player);
-            playerInventory.openInventory();
+            if (player.hasPermission("tagcollector.gui")) {
+                TagCollectorGUI playerInventory = new TagCollectorGUI(player);
+                if (playerInventory.getNumberOfTags() > 0) {
+                    playerInventory.openInventory();
+                } else {
+                    player.sendMessage(ChatColor.RED + "Sorry, but your only tag is the one you already have");
+                }
+
+            } else {
+                player.sendMessage(ChatColor.DARK_RED + "I'm sorry, you don't have permission for that command!");
+            }
         }
 
         return false;
